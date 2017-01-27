@@ -161,6 +161,8 @@ XMLElement
 */
 public protocol XMLElement: SearchableNode {
     var parent: XMLElement? { get set }
+    var nodePtr: xmlNodePtr { get set }
+    
     subscript(attr: String) -> String? { get set }
 
     func addPrevSibling(node: XMLElement)
@@ -168,6 +170,7 @@ public protocol XMLElement: SearchableNode {
     func removeChild(node: XMLElement)
     func addChild(node: XMLElement)
     func setAttribute(node: XMLElement, name: String, value: String?)
+    func children() -> [XMLElement]
     
 }
 

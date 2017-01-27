@@ -149,6 +149,41 @@ internal final class libxmlHTMLDocument: HTMLDocument {
     func at_css(selector: String) -> XMLElement? {
         return self.at_css(selector, namespaces: nil)
     }
+    
+    func children() -> [XMLElement] {
+        
+        var children: [XMLElement] = []
+        var childrenPointers: [xmlNodePtr] = []
+        
+        guard let rootNode = rootNode else { return [] }
+        
+        // If no children return out
+        let count = xmlChildElementCount(rootNode.nodePtr)
+        if count == 0 {
+            return []
+        }
+        
+        // If first child
+        let firstChildPointer = rootNode.nodePtr.memory.children
+        if firstChildPointer != nil {
+            
+            childrenPointers.append(firstChildPointer)
+        }
+        
+        // Add the rest of the children
+        for _ in 1.stride(to: Int(count), by: 1) {
+            
+            if let last = childrenPointers.last {
+                let next = last.memory.next
+                
+                if next != nil {
+                    childrenPointers.append(next)
+                }
+            }
+        }
+        
+        return childrenPointers.map({ return libxmlHTMLNode.init(docPtr: docPtr, node: $0 )})
+    }
 }
 
 /*
