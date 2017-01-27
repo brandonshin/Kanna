@@ -105,7 +105,7 @@ internal final class libxmlHTMLNode: XMLElement {
     }
 
     private var docPtr:  htmlDocPtr = nil
-    private var nodePtr: xmlNodePtr = nil
+    internal var nodePtr: xmlNodePtr = nil
     private var isRoot:  Bool       = false
     
     
@@ -244,6 +244,42 @@ internal final class libxmlHTMLNode: XMLElement {
         } else {
             xmlUnsetProp(nodePtr, name)
         }
+    }
+    
+    func children() -> [XMLElement] {
+        
+        if nodePtr == nil { return [] }
+        
+        var children: [XMLElement] = []
+        var childrenPointers: [xmlNodePtr] = []
+        
+        // If no children return out
+        let count = xmlChildElementCount(self.nodePtr)
+        if count == 0 {
+            return []
+        }
+        
+        // If first child
+        let firstChildPointer = nodePtr.memory.children
+        
+        if firstChildPointer != nil {
+            childrenPointers.append(firstChildPointer)
+            children.append(libxmlHTMLNode.init(docPtr: docPtr, node: firstChildPointer ))
+        }
+        
+        // Add the rest of the children
+        for _ in 1.stride(to: Int(count), by: 1) {
+            
+            if let last = childrenPointers.last {
+                let next = last.memory.next
+                if next != nil {
+                    childrenPointers.append(next)
+                    children.append(libxmlHTMLNode.init(docPtr: docPtr, node: next ))
+                }
+            }
+        }
+        
+        return children
     }
 }
 
