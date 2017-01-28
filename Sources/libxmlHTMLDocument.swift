@@ -29,7 +29,7 @@ libxmlHTMLDocument
 */
 internal final class libxmlHTMLDocument: HTMLDocument {
     private var docPtr:   htmlDocPtr = nil
-    private var rootNode: XMLElement?
+    internal var rootNode: XMLElement?
     private var html: String
     private var url:  String?
     private var encoding: UInt
@@ -155,32 +155,29 @@ internal final class libxmlHTMLDocument: HTMLDocument {
         var children: [XMLElement] = []
         var childrenPointers: [xmlNodePtr] = []
         
+        // If no root node, then return nil
         guard let rootNode = rootNode else { return [] }
         
-        // If no children return out
-        let count = xmlChildElementCount(rootNode.nodePtr)
-        if count == 0 {
+        // Get pointer for first child of root node
+        let firstChildPointer = rootNode.nodePtr.memory.children
+        
+        // If the pointer is nil, return empty
+        if firstChildPointer == nil {
             return []
         }
         
-        // If first child
-        let firstChildPointer = rootNode.nodePtr.memory.children
+        // If first child is not nil, add it to list of pointers
         if firstChildPointer != nil {
             
             childrenPointers.append(firstChildPointer)
             children.append(libxmlHTMLNode.init(docPtr: docPtr, node: firstChildPointer ))
         }
         
-        // Add the rest of the children
-        for _ in 1.stride(to: Int(count), by: 1) {
+        // Keep iterating on next siblings, until getting a nil sibling
+        while let next = childrenPointers.last?.memory.next where next != nil {
             
-            if let last = childrenPointers.last {
-                let next = last.memory.next
-                if next != nil {
-                    childrenPointers.append(next)
-                    children.append(libxmlHTMLNode.init(docPtr: docPtr, node: next ))
-                }
-            }
+            childrenPointers.append(next)
+            children.append(libxmlHTMLNode.init(docPtr: docPtr, node: next ))
         }
         
         return children
