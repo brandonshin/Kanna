@@ -256,11 +256,17 @@ internal final class libxmlHTMLNode: XMLElement {
 
     func removeChild(_ node: XMLElement) {
 
-        guard let node = node as? libxmlHTMLNode else {
+        guard let node = node as? libxmlHTMLNode, let ptr = node.nodePtr else {
             return
         }
-        xmlUnlinkNode(node.nodePtr)
-        xmlFreeNode(node.nodePtr)
+        
+        xmlUnlinkNode(ptr)
+        
+        // HACK(SHIN): Identify whether the pointee type is valid before trying to free node due to malloc crash
+        // when pointer was not allocated.
+        if (ptr.pointee.type.rawValue < 22 && ptr.pointee.type.rawValue > 0) {
+            xmlFreeNode(ptr)
+        }
     }
 
     func setAttribute(name: String, value: String?) {
