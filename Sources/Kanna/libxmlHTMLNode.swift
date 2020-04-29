@@ -122,6 +122,35 @@ internal final class libxmlHTMLNode: XMLElement {
         let val = xmlPreviousElementSibling(self.nodePtr)
         return self.node(from: val)
     }
+    
+    // Setters for dark mode
+    fileprivate var internalStyles: [String: String]?
+    var styles: [String : String]? {
+        get {
+            // Cached lookup for performance
+            if let i = internalStyles {
+                return i
+            }
+            
+            if let style = self["style"] {
+                let styleItems = style.split(separator: ";")
+                let styleDict = styleItems.reduce(into: [:] as [String: String], { r, n in
+                    let styleParts = n.split(separator: ":")
+                    if let styleKey = styleParts.first?.trimmingCharacters(in: .whitespaces), let styleValue = styleParts.last?.trimmingCharacters(in: .whitespaces) {
+                        r[styleKey] = styleValue
+                    }
+                })
+                return styleDict
+            }
+            
+            return nil
+        }
+    }
+    
+    func setStyles(styles: [String : String]) {
+        self.internalStyles = styles
+        self.setAttribute(name: "style", value: styles.reduce(into: "") { r, n in r.append(n.key + ":" + n.value + "; ")})
+    }
 
     fileprivate weak var weakDocument: XMLDocument?
     fileprivate var document: XMLDocument?

@@ -176,6 +176,7 @@ public protocol XMLElement: SearchableNode {
     subscript(attr: String) -> String? { get set }
 
     var styles: [String: String]? { get set }
+    func setStyles(styles: [String: String])
     func addPrevSibling(_ node: XMLElement)
     func addNextSibling(_ node: XMLElement)
     func removeChild(_ node: XMLElement)
