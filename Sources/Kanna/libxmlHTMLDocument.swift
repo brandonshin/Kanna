@@ -237,6 +237,29 @@ internal final class libxmlXMLDocument: XMLDocument {
         return rootNode?.text
     }
     
+    var styles: [String : String]? {
+        get {
+            
+            if let style = self["style"] {
+                let styleItems = style.split(separator: ";")
+                let styleDict = styleItems.reduce(into: [:] as [String: String], { r, n in
+                    let styleParts = n.split(separator: ":")
+                    if let styleKey = styleParts.first?.trimmingCharacters(in: .whitespaces), let styleValue = styleParts.last?.trimmingCharacters(in: .whitespaces) {
+                        r[styleKey] = styleValue
+                    }
+                })
+                return styleDict
+            }
+            
+            return nil
+        }
+        set {
+            if let v = newValue {
+                self.setAttribute(name: "style", value: v.reduce(into: "") { r, n in r?.append(n.key + ":" + n.value + "; ")})
+            }
+        }
+    }
+    
     var toHTML: String? {
         let buf = xmlBufferCreate()
         defer {
