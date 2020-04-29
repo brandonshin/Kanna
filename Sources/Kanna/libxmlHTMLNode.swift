@@ -140,6 +140,7 @@ internal final class libxmlHTMLNode: XMLElement {
                         r[styleKey] = styleValue
                     }
                 })
+                self.internalStyles = styleDict
                 return styleDict
             }
             
