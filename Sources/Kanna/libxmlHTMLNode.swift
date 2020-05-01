@@ -100,7 +100,10 @@ internal final class libxmlHTMLNode: XMLElement {
 
     var parent: XMLElement? {
         get {
-            return libxmlHTMLNode(document: doc, docPtr: docPtr!, node: (nodePtr?.pointee.parent)!)
+            if let node = nodePtr?.pointee.parent {
+                return libxmlHTMLNode(document: doc, docPtr: docPtr!, node: node)
+            }
+            return nil
         }
 
         set {
@@ -118,6 +121,38 @@ internal final class libxmlHTMLNode: XMLElement {
     var previousSibling: XMLElement? {
         let val = xmlPreviousElementSibling(self.nodePtr)
         return self.node(from: val)
+    }
+    
+    // Setters for dark mode
+    fileprivate var internalStyles: [String: String]?
+    var styles: [String : String]? {
+        get {
+            // Cached lookup for performance
+            if let i = internalStyles {
+                return i
+            }
+            
+            // NOTE(SHIN): Will not work properly in cases of malformed styles
+            // TODO(SHIN): Moved to lexer based parser
+            if let style = self["style"] {
+                let styleItems = style.split(separator: ";")
+                let styleDict = styleItems.reduce(into: [:] as [String: String], { r, n in
+                    let styleParts = n.split(separator: ":")
+                    if let styleKey = styleParts.first?.trimmingCharacters(in: .whitespaces), let styleValue = styleParts.last?.trimmingCharacters(in: .whitespaces) {
+                        r[styleKey] = styleValue
+                    }
+                })
+                self.internalStyles = styleDict
+                return styleDict
+            }
+            
+            return nil
+        }
+    }
+    
+    func setStyles(styles: [String : String]) {
+        self.internalStyles = styles
+        self.setAttribute(name: "style", value: styles.reduce(into: "") { r, n in r.append(n.key + ":" + n.value + "; ")})
     }
 
     fileprivate weak var weakDocument: XMLDocument?
