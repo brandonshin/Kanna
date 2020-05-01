@@ -180,6 +180,93 @@ class KannaHTMLTests: XCTestCase {
             XCTAssert(element.text! == "def")
         }
     }
+    
+    // Testing style extraction for Kanna
+    func testCorrectStyles() {
+        let html = "<body><div id='my.id' style='background-color: red; color: white'>target</div><div>second</div><div>third</div></body>"
+        guard let doc = try? HTML(html: html, encoding: .utf8),
+            let node = doc.css("div[id='my\\.id']").first else {
+                XCTFail()
+                return
+        }
+        
+        XCTAssert(node.styles == ["background-color": "red", "color": "white"])
+        XCTAssert(node.text == "target")
+    }
+    
+    // Testing style extraction for Kanna
+    func testMalformedStylesOne() {
+        let html = "<body><div id='my.id' style='background-color: red;; color: white'>target</div><div>second</div><div>third</div></body>"
+        guard let doc = try? HTML(html: html, encoding: .utf8),
+            let node = doc.css("div[id='my\\.id']").first else {
+                XCTFail()
+                return
+        }
+        
+        XCTAssert(node.styles == ["background-color": "red", "color": "white"])
+        XCTAssert(node.text == "target")
+    }
+    
+    // Testing style extraction for Kanna
+    func testMalformedStyles2() {
+        let html = "<body><div id='my.id' style='background-color: red;; color: white'>target</div><div>second</div><div>third</div></body>"
+        guard let doc = try? HTML(html: html, encoding: .utf8),
+            let node = doc.css("div[id='my\\.id']").first else {
+                XCTFail()
+                return
+        }
+        
+        XCTAssert(node.styles == ["background-color": "red", "color": "white"])
+        XCTAssert(node.text == "target")
+    }
+    
+    // Testing style extraction for Kanna
+    func testMalformedStyles3() {
+        let html = "<body><div id='my.id' style='color:: red'>target</div><div>second</div><div>third</div></body>"
+        guard let doc = try? HTML(html: html, encoding: .utf8),
+            let node = doc.css("div[id='my\\.id']").first else {
+                XCTFail()
+                return
+        }
+        
+        XCTAssert(node.styles == ["color": "red"])
+        XCTAssert(node.text == "target")
+    }
+    
+    // Testing style extraction for Kanna
+    func testMalformedStyles4() {
+        let html = "<body><div id='my.id' style='font-family: \"FontName;\"; color: yellow;'>target</div><div>second</div><div>third</div></body>"
+        guard let doc = try? HTML(html: html, encoding: .utf8),
+            let node = doc.css("div[id='my\\.id']").first else {
+                XCTFail()
+                return
+        }
+        
+        XCTAssert(node.styles?["color"] == "yellow")
+        XCTAssert(node.text == "target")
+    }
+    
+    // Testing style extraction for Kanna
+    func testStyleSetter() {
+        let html = "<body><div id='my.id' style='background-color: red; color: white'>target</div><div>second</div><div>third</div></body>"
+        guard let doc = try? HTML(html: html, encoding: .utf8),
+            let node = doc.css("div[id='my\\.id']").first else {
+                XCTFail()
+                return
+        }
+        
+        // Expect parsed version to work correctly
+        XCTAssert(node.styles == ["background-color": "red", "color": "white"])
+        node.setStyles(styles: ["background-color": "white"])
+        
+        // Expect style to be set
+        XCTAssert(node.styles == ["background-color": "white"])
+        
+        // Expect string to be set porperly
+        dump(node["style"])
+        XCTAssert(node["style"] == "background-color:white; ")
+        XCTAssert(node.text == "target")
+    }
 }
 
 extension KannaHTMLTests {

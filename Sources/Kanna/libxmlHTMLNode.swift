@@ -132,6 +132,8 @@ internal final class libxmlHTMLNode: XMLElement {
                 return i
             }
             
+            // NOTE(SHIN): Will not work properly in cases of malformed styles
+            // TODO(SHIN): Moved to lexer based parser
             if let style = self["style"] {
                 let styleItems = style.split(separator: ";")
                 let styleDict = styleItems.reduce(into: [:] as [String: String], { r, n in
